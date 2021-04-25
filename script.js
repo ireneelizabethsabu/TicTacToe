@@ -21,10 +21,19 @@ $(document).ready(function () {
     })();
 
     const displayController = (() => {
+        const displayWinner = (winnerText) => {
+            $(this).delay(2000).queue(() => {
+                $('.table').addClass('winner-display');
+                let winner = $(`<div class="winner-text typewriter">${winnerText}</div>`).hide().fadeIn(100);
+                $('body').append(winner);
+                $('body').append(`<button class="btn btn-outline-secondary play-again-btn">Play Again ?</button>`);
+            });
+            
+        }
         const updateDisplay = (symbol,index) => {
             $('#'+index).text(symbol);
         }
-        return {updateDisplay};
+        return {updateDisplay,displayWinner};
     })();
 
     const gameController = (() => {
@@ -38,11 +47,12 @@ $(document).ready(function () {
                 gameBoard.setField(currentPlayer(),index);   
             }
             if(checkWinner(index)) {
+                displayController.displayWinner('The Winner is ' + currentPlayer());
                 console.log(currentPlayer());
                 isOver = true;
             }else if(round === 8 && !isOver){
                 isOver = true;
-                console.log('draw');
+                displayController.displayWinner('DRAW');
                 return;
             }   
             round++;
@@ -58,9 +68,12 @@ $(document).ready(function () {
                             [2,4,6]
                         ];
             return possibleWin.filter((rows) => rows.includes(index))
-            .some((row) => row.every(
-                (element) => gameBoard.getField(element) === currentPlayer()
-            ));    
+            .some((row) => {
+                if(row.every((element) => gameBoard.getField(element) === currentPlayer())){
+                    row.forEach(cell => $('#'+cell).css("background-color",'rgb(82 193 133)'));
+                    return true;
+                }
+            });   
         }
 
         const currentPlayer = () => {
@@ -73,4 +86,9 @@ $(document).ready(function () {
             var data = $(this).attr('id');           
             gameController.playRound(parseInt(data));
     });
+
+    $(document).on("click", ".play-again-btn", function(e) {
+        history.go(0)
+    });
+
 });
